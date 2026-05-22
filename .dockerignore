@@ -1,3 +1,4 @@
+.git
 .next
 coverage
 node_modules
@@ -7,4 +8,7 @@ npm-debug.log*
 .env.local
 .env.production
 .env.test
-!.env.example
+Dockerfile
+README.md
+tests
+ETL_PIPELINE_UI_IMPLEMENTATION.md

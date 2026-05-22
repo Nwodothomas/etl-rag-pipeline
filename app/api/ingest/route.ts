@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 
+import { getServerSupabaseEnv } from "@/lib/env";
 import {
   createIngestionJob,
   getIngestionJobByAssetId,
@@ -68,10 +69,12 @@ export async function POST(request: Request) {
     }
 
     const { job } = createIngestionJob(payload as IngestionRequest);
+    const { ragBackendBaseUrl } = getServerSupabaseEnv();
     const body: IngestionResponse = {
       job,
-      message:
-        "Ingestion job created. This is the contract boundary where rag-backend will later be called.",
+      message: ragBackendBaseUrl
+        ? `Ingestion job created. The current UI contract is ready for backend handoff at ${ragBackendBaseUrl}.`
+        : "Ingestion job created. Set RAG_BACKEND_BASE_URL when you are ready to wire the backend handoff.",
     };
 
     return NextResponse.json(body, { status: 201 });

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 
+import { getServerSupabaseEnv } from "@/lib/env";
 import { mapStorageObjectToAsset } from "@/lib/history";
 import { getSupabaseServerClient } from "@/lib/supabaseClient";
 import type {
@@ -12,9 +13,6 @@ import type {
 } from "@/lib/types";
 
 export const runtime = "nodejs";
-
-const DEFAULT_BUCKET_NAME = process.env.SUPABASE_STORAGE_BUCKET ?? "knowledge-base";
-const DEFAULT_HISTORY_PREFIX = process.env.SUPABASE_STORAGE_HISTORY_PREFIX ?? "";
 
 function jsonError(
   status: number,
@@ -59,8 +57,9 @@ async function handleFileUpload(request: Request) {
   )}`;
   const fileBuffer = Buffer.from(await file.arrayBuffer());
   const supabase = getSupabaseServerClient();
+  const { storageBucket } = getServerSupabaseEnv();
   const { error } = await supabase.storage
-    .from(DEFAULT_BUCKET_NAME)
+    .from(storageBucket)
     .upload(objectPath, fileBuffer, {
       contentType: file.type || "application/octet-stream",
       upsert: false,
@@ -79,7 +78,7 @@ async function handleFileUpload(request: Request) {
     uploadedAt: new Date().toISOString(),
     sizeBytes: file.size,
     mimeType: file.type || "application/octet-stream",
-    bucketName: DEFAULT_BUCKET_NAME,
+    bucketName: storageBucket,
     bucketPath: objectPath,
   };
   const body: UploadResponse = {
@@ -142,9 +141,10 @@ export async function POST(request: Request) {
 export async function GET() {
   try {
     const supabase = getSupabaseServerClient();
+    const { storageBucket, storageHistoryPrefix } = getServerSupabaseEnv();
     const { data, error } = await supabase.storage
-      .from(DEFAULT_BUCKET_NAME)
-      .list(DEFAULT_HISTORY_PREFIX, {
+      .from(storageBucket)
+      .list(storageHistoryPrefix, {
         limit: 100,
         sortBy: { column: "created_at", order: "desc" },
       });
@@ -156,7 +156,7 @@ export async function GET() {
     const assets = (data ?? [])
       .filter((item) => item.name && item.name !== ".emptyFolderPlaceholder")
       .map((item) =>
-        mapStorageObjectToAsset(DEFAULT_BUCKET_NAME, DEFAULT_HISTORY_PREFIX, item)
+        mapStorageObjectToAsset(storageBucket, storageHistoryPrefix, item)
       )
       .sort(
         (left, right) =>
