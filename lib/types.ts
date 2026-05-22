@@ -27,15 +27,20 @@ export interface KnowledgeAsset {
   status: PipelineStatus;
   uploadedAt: string;
   sizeBytes?: number;
+  mimeType?: string;
   bucketPath?: string;
+  bucketName?: string;
   sourceUrl?: string;
   errorMessage?: string;
 }
 
 export interface UploadRequest {
   sourceType: UploadSourceType;
+  assetType: AssetType;
   fileName?: string;
   sourceUrl?: string;
+  sizeBytes?: number;
+  mimeType?: string;
 }
 
 export interface UploadResponse {
@@ -65,4 +70,10 @@ export interface IngestionResponse {
 export interface ApiErrorResponse {
   error: string;
   details?: string;
+}
+
+export interface UploadValidationResult {
+  valid: boolean;
+  errors: string[];
+  request?: UploadRequest;
 }

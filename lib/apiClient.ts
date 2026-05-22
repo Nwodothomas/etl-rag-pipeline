@@ -2,6 +2,7 @@ import type {
   ApiErrorResponse,
   IngestionRequest,
   IngestionResponse,
+  UploadRequest,
   UploadResponse,
 } from "@/lib/types";
 
@@ -16,11 +17,21 @@ async function parseResponse<T>(response: Response): Promise<T> {
   return data as T;
 }
 
-export async function createUpload(formData: FormData) {
-  const response = await fetch("/api/upload", {
+export async function createUpload(payload: FormData | UploadRequest) {
+  const requestInit: RequestInit = {
     method: "POST",
-    body: formData,
-  });
+  };
+
+  if (payload instanceof FormData) {
+    requestInit.body = payload;
+  } else {
+    requestInit.headers = {
+      "Content-Type": "application/json",
+    };
+    requestInit.body = JSON.stringify(payload);
+  }
+
+  const response = await fetch("/api/upload", requestInit);
 
   return parseResponse<UploadResponse>(response);
 }
