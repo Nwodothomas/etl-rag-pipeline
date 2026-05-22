@@ -1,5 +1,4 @@
-import UploadForm from "@/app/upload/UploadForm";
-import UploadHistory from "@/app/upload/UploadHistory";
+import UploadWorkspace from "@/app/upload/UploadWorkspace";
 
 export default function UploadPage() {
   return (
@@ -12,16 +11,13 @@ export default function UploadPage() {
           Prepare files and source links for the knowledge pipeline.
         </h1>
         <p className="mt-4 max-w-3xl text-base leading-7 text-slate-600">
-          This stage establishes the upload screen structure. The real API
-          integration with Supabase storage will be implemented later, but the
-          page layout, typed models, and operator workflow are now in place.
+          This stage connects the upload page to real API-facing history so the
+          workspace can show what has already reached storage and immediately
+          reflect newly uploaded assets.
         </p>
       </div>
 
-      <div className="grid gap-6 xl:grid-cols-[1.15fr_0.85fr]">
-        <UploadForm />
-        <UploadHistory />
-      </div>
+      <UploadWorkspace />
     </section>
   );
 }

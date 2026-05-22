@@ -20,7 +20,11 @@ type SubmissionState =
   | 'success'
   | 'error';
 
-export default function UploadForm() {
+type UploadFormProps = {
+  onUploadComplete?: (asset: KnowledgeAsset) => void;
+};
+
+export default function UploadForm({ onUploadComplete }: UploadFormProps) {
   const [file, setFile] = useState<File | null>(null);
   const [sourceType, setSourceType] = useState<UploadSourceType>('file');
   const [urlValue, setUrlValue] = useState('');
@@ -84,6 +88,7 @@ export default function UploadForm() {
       setUploadedAsset(response.asset);
       setSuccessMessage(response.message);
       setSubmissionState('success');
+      onUploadComplete?.(response.asset);
     } catch (error) {
       setErrors([
         error instanceof Error ? error.message : 'Upload request failed unexpectedly.',

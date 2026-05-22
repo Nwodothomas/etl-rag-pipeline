@@ -1,40 +1,20 @@
+import Loader from "@/components/Loader";
 import FileCard from "@/components/FileCard";
 import type { KnowledgeAsset } from "@/lib/types";
 
-const uploadHistory: KnowledgeAsset[] = [
-  {
-    id: "asset-001",
-    name: "architecture-overview.pdf",
-    assetType: "pdf",
-    sourceType: "file",
-    status: "uploaded",
-    uploadedAt: "2026-05-22T09:00:00.000Z",
-    sizeBytes: 246000,
-    bucketPath: "knowledge-base/architecture-overview.pdf",
-  },
-  {
-    id: "asset-002",
-    name: "roadmap-notes.txt",
-    assetType: "txt",
-    sourceType: "file",
-    status: "queued",
-    uploadedAt: "2026-05-22T09:08:00.000Z",
-    sizeBytes: 1800,
-    bucketPath: "knowledge-base/roadmap-notes.txt",
-  },
-  {
-    id: "asset-003",
-    name: "https://docs.example.com/start-here",
-    assetType: "url",
-    sourceType: "url",
-    status: "failed",
-    uploadedAt: "2026-05-22T09:10:00.000Z",
-    sourceUrl: "https://docs.example.com/start-here",
-    errorMessage: "Source validation was not implemented in Stage 1.",
-  },
-];
+type UploadHistoryProps = {
+  assets: KnowledgeAsset[];
+  isLoading: boolean;
+  error: string | null;
+  onRefresh: () => void | Promise<void>;
+};
 
-export default function UploadHistory() {
+export default function UploadHistory({
+  assets,
+  isLoading,
+  error,
+  onRefresh,
+}: UploadHistoryProps) {
   return (
     <section className="rounded-3xl border border-black/10 bg-white p-6 shadow-sm">
       <div className="flex items-start justify-between gap-4">
@@ -43,20 +23,51 @@ export default function UploadHistory() {
             Upload history
           </h2>
           <p className="mt-2 text-sm leading-6 text-slate-600">
-            Placeholder data shows the state model we will use once uploads are
-            returned from the API.
+            This panel now reads from the upload API and reflects newly
+            completed uploads as they come back from the server.
           </p>
         </div>
-        <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-slate-600">
-          Stage 1
-        </span>
+        <button
+          type="button"
+          onClick={() => {
+            void onRefresh();
+          }}
+          className="rounded-full border border-slate-300 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-slate-600 transition hover:border-slate-400 hover:bg-slate-50"
+        >
+          Refresh
+        </button>
       </div>
 
-      <div className="mt-6 space-y-4">
-        {uploadHistory.map((asset) => (
-          <FileCard key={asset.id} asset={asset} />
-        ))}
-      </div>
+      {isLoading ? (
+        <div className="mt-6">
+          <Loader label="Loading upload history..." />
+        </div>
+      ) : null}
+
+      {error ? (
+        <div
+          role="alert"
+          className="mt-6 rounded-2xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-700"
+        >
+          <p className="font-semibold">Upload history is unavailable.</p>
+          <p className="mt-2">{error}</p>
+        </div>
+      ) : null}
+
+      {!isLoading && !error && assets.length === 0 ? (
+        <div className="mt-6 rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-5 text-sm leading-6 text-slate-600">
+          No uploaded assets were returned by the API yet. Uploading a file will
+          place it here as soon as the server responds successfully.
+        </div>
+      ) : null}
+
+      {!isLoading && !error && assets.length > 0 ? (
+        <div className="mt-6 space-y-4">
+          {assets.map((asset) => (
+            <FileCard key={asset.id} asset={asset} />
+          ))}
+        </div>
+      ) : null}
     </section>
   );
 }

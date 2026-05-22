@@ -1,10 +1,12 @@
 import { NextResponse } from "next/server";
 
+import { mapStorageObjectToAsset } from "@/lib/history";
 import { getSupabaseServerClient } from "@/lib/supabaseClient";
 import type {
   ApiErrorResponse,
   AssetType,
   KnowledgeAsset,
+  UploadHistoryResponse,
   UploadRequest,
   UploadResponse,
 } from "@/lib/types";
@@ -12,6 +14,7 @@ import type {
 export const runtime = "nodejs";
 
 const DEFAULT_BUCKET_NAME = process.env.SUPABASE_STORAGE_BUCKET ?? "knowledge-base";
+const DEFAULT_HISTORY_PREFIX = process.env.SUPABASE_STORAGE_HISTORY_PREFIX ?? "";
 
 function jsonError(
   status: number,
@@ -133,5 +136,43 @@ export async function POST(request: Request) {
       error instanceof Error ? error.message : "Unexpected upload error.";
 
     return jsonError(500, "Upload request failed.", details);
+  }
+}
+
+export async function GET() {
+  try {
+    const supabase = getSupabaseServerClient();
+    const { data, error } = await supabase.storage
+      .from(DEFAULT_BUCKET_NAME)
+      .list(DEFAULT_HISTORY_PREFIX, {
+        limit: 100,
+        sortBy: { column: "created_at", order: "desc" },
+      });
+
+    if (error) {
+      return jsonError(502, "Failed to load upload history.", error.message);
+    }
+
+    const assets = (data ?? [])
+      .filter((item) => item.name && item.name !== ".emptyFolderPlaceholder")
+      .map((item) =>
+        mapStorageObjectToAsset(DEFAULT_BUCKET_NAME, DEFAULT_HISTORY_PREFIX, item)
+      )
+      .sort(
+        (left, right) =>
+          new Date(right.uploadedAt).getTime() - new Date(left.uploadedAt).getTime()
+      );
+
+    const body: UploadHistoryResponse = {
+      assets,
+      message: "Upload history loaded from Supabase storage.",
+    };
+
+    return NextResponse.json(body);
+  } catch (error) {
+    const details =
+      error instanceof Error ? error.message : "Unexpected upload history error.";
+
+    return jsonError(500, "Failed to load upload history.", details);
   }
 }

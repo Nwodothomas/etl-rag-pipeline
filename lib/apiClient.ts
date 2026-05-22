@@ -2,6 +2,7 @@ import type {
   ApiErrorResponse,
   IngestionRequest,
   IngestionResponse,
+  UploadHistoryResponse,
   UploadRequest,
   UploadResponse,
 } from "@/lib/types";
@@ -34,6 +35,15 @@ export async function createUpload(payload: FormData | UploadRequest) {
   const response = await fetch("/api/upload", requestInit);
 
   return parseResponse<UploadResponse>(response);
+}
+
+export async function fetchUploadHistory() {
+  const response = await fetch("/api/upload", {
+    method: "GET",
+    cache: "no-store",
+  });
+
+  return parseResponse<UploadHistoryResponse>(response);
 }
 
 export async function triggerIngestion(payload: IngestionRequest) {

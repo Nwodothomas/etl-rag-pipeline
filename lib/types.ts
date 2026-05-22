@@ -48,6 +48,11 @@ export interface UploadResponse {
   message: string;
 }
 
+export interface UploadHistoryResponse {
+  assets: KnowledgeAsset[];
+  message: string;
+}
+
 export interface IngestionJob {
   id: string;
   assetId: string;
