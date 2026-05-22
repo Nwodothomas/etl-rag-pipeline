@@ -4,17 +4,13 @@ export default function Home() {
   return (
     <section className="space-y-6">
       <div className="rounded-3xl border border-black/10 bg-white px-6 py-8 shadow-sm">
-        <p className="text-sm font-semibold uppercase tracking-[0.2em] text-sky-700">
-          Stage 1 Foundation
-        </p>
-        <h1 className="mt-3 max-w-3xl text-4xl font-semibold tracking-tight text-slate-950">
+        <h1 className="max-w-3xl text-4xl font-semibold tracking-tight text-slate-950">
           ETL pipeline UI for uploading and ingesting knowledge assets into a
           RAG workflow.
         </h1>
         <p className="mt-4 max-w-2xl text-base leading-7 text-slate-600">
-          This foundation stage sets up the route structure, shared UI shell,
-          typed models, and API boundaries we will use before wiring real
-          Supabase uploads and backend ingestion.
+          Manage source uploads, review storage activity, and trigger ingestion
+          jobs through a clean operator dashboard built for RAG pipeline work.
         </p>
         <div className="mt-6 flex flex-col gap-3 sm:flex-row">
           <Link

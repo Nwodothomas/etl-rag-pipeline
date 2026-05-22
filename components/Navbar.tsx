@@ -9,11 +9,12 @@ export default function Navbar() {
             ETL RAG Pipeline
           </Link>
           <p className="text-sm text-slate-500">
-            Developer workspace for upload and ingestion operations
+            Upload, storage, and ingestion workspace
           </p>
         </div>
-        <div className="rounded-full border border-sky-200 bg-sky-50 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-sky-700">
-          Foundation Stage
+        <div className="hidden items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-medium text-slate-600 md:inline-flex">
+          <span className="h-2 w-2 rounded-full bg-emerald-500" />
+          Pipeline Console
         </div>
       </div>
     </header>
