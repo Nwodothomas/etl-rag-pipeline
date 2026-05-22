@@ -115,4 +115,78 @@ describe('UploadForm', () => {
     ).toBeInTheDocument();
     expect(within(summary).getAllByText(/^url$/i)).toHaveLength(2);
   });
+
+  it('shows a validation error for an invalid url source', async () => {
+    const user = userEvent.setup();
+
+    render(<UploadForm />);
+
+    await user.click(screen.getByRole('button', { name: /url source/i }));
+    await user.type(screen.getByLabelText(/source url/i), 'notaurl');
+    await user.click(screen.getByRole('button', { name: /validate and upload/i }));
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(/enter a valid url/i);
+  });
+
+  it('shows an api error when upload submission fails', async () => {
+    const user = userEvent.setup();
+
+    jest
+      .spyOn(apiClient, 'createUpload')
+      .mockRejectedValue(new Error('Supabase upload failed.'));
+
+    render(<UploadForm />);
+
+    const fileInput = screen.getByLabelText(/upload file/i);
+    const file = new File(['test content'], 'report.pdf', {
+      type: 'application/pdf',
+    });
+
+    await user.upload(fileInput, file);
+    await user.click(screen.getByRole('button', { name: /validate and upload/i }));
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      /supabase upload failed/i
+    );
+  });
+
+  it('calls onUploadComplete after a successful upload', async () => {
+    const user = userEvent.setup();
+    const onUploadComplete = jest.fn();
+
+    jest.spyOn(apiClient, 'createUpload').mockResolvedValue({
+      message: 'File uploaded to Supabase storage.',
+      asset: {
+        id: 'asset-file-1',
+        name: 'report.pdf',
+        assetType: 'pdf',
+        sourceType: 'file',
+        status: 'uploaded',
+        uploadedAt: '2026-05-22T10:00:00.000Z',
+        sizeBytes: 12,
+        mimeType: 'application/pdf',
+        bucketName: 'knowledge-base',
+        bucketPath: '2026-05-22/asset-file-1-report.pdf',
+      },
+    });
+
+    render(<UploadForm onUploadComplete={onUploadComplete} />);
+
+    const fileInput = screen.getByLabelText(/upload file/i);
+    const file = new File(['test content'], 'report.pdf', {
+      type: 'application/pdf',
+    });
+
+    await user.upload(fileInput, file);
+    await user.click(screen.getByRole('button', { name: /validate and upload/i }));
+
+    expect(await screen.findByText(/upload contract sent successfully/i)).toBeInTheDocument();
+    expect(onUploadComplete).toHaveBeenCalledWith(
+      expect.objectContaining({
+        id: 'asset-file-1',
+        name: 'report.pdf',
+        status: 'uploaded',
+      })
+    );
+  });
 });

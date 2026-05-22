@@ -136,4 +136,79 @@ describe('IngestionWorkspace', () => {
     ).toBeInTheDocument();
     expect(fetchJobsSpy).toHaveBeenCalled();
   });
+
+  it('shows a friendly empty state when no assets are available', async () => {
+    jest.spyOn(apiClient, 'fetchUploadHistory').mockResolvedValue({
+      message: 'Upload history loaded from Supabase storage.',
+      assets: [],
+    });
+    jest.spyOn(apiClient, 'fetchIngestionHistory').mockResolvedValue({
+      message: 'Ingestion jobs loaded from the ingestion API.',
+      jobs: [],
+    });
+
+    render(<IngestionWorkspace />);
+
+    expect(
+      await screen.findByText(/no uploaded assets are available yet/i)
+    ).toBeInTheDocument();
+    expect(
+      await screen.findByText(/no ingestion jobs have been triggered yet/i)
+    ).toBeInTheDocument();
+  });
+
+  it('shows an ingestion logs error when the jobs request fails', async () => {
+    jest.spyOn(apiClient, 'fetchUploadHistory').mockResolvedValue({
+      message: 'Upload history loaded from Supabase storage.',
+      assets: [],
+    });
+    jest
+      .spyOn(apiClient, 'fetchIngestionHistory')
+      .mockRejectedValue(new Error('Jobs API is unavailable.'));
+
+    render(<IngestionWorkspace />);
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      /jobs api is unavailable/i
+    );
+  });
+
+  it('shows a trigger error when ingestion submission fails', async () => {
+    const user = userEvent.setup();
+
+    jest.spyOn(apiClient, 'fetchUploadHistory').mockResolvedValue({
+      message: 'Upload history loaded from Supabase storage.',
+      assets: [
+        {
+          id: 'asset-1',
+          name: 'report.pdf',
+          assetType: 'pdf',
+          sourceType: 'file',
+          status: 'uploaded',
+          uploadedAt: '2026-05-22T10:00:00.000Z',
+          bucketPath: '2026-05-22/report.pdf',
+          bucketName: 'knowledge-base',
+        },
+      ],
+    });
+    jest.spyOn(apiClient, 'fetchIngestionHistory').mockResolvedValue({
+      message: 'Ingestion jobs loaded from the ingestion API.',
+      jobs: [],
+    });
+    jest
+      .spyOn(apiClient, 'triggerIngestion')
+      .mockRejectedValue(new Error('rag-backend is unavailable.'));
+
+    render(<IngestionWorkspace />);
+
+    await user.click(
+      await screen.findByRole('button', {
+        name: /trigger ingestion/i,
+      })
+    );
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      /rag-backend is unavailable/i
+    );
+  });
 });

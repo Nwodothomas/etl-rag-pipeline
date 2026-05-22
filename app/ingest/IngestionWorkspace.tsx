@@ -19,6 +19,8 @@ export default function IngestionWorkspace() {
   const [assetsError, setAssetsError] = useState<string | null>(null);
   const [jobsError, setJobsError] = useState<string | null>(null);
   const [activeAssetId, setActiveAssetId] = useState<string | null>(null);
+  const [triggerError, setTriggerError] = useState<string | null>(null);
+  const [triggerMessage, setTriggerMessage] = useState<string | null>(null);
 
   const loadAssets = async () => {
     setAssetsLoading(true);
@@ -125,6 +127,8 @@ export default function IngestionWorkspace() {
 
   const handleTrigger = async (asset: KnowledgeAsset) => {
     setActiveAssetId(asset.id);
+    setTriggerError(null);
+    setTriggerMessage(null);
 
     try {
       const response = await triggerIngestion({
@@ -154,13 +158,14 @@ export default function IngestionWorkspace() {
         });
       });
       setJobsError(null);
+      setTriggerMessage(response.message);
+      await loadJobs();
     } catch (error) {
-      setJobsError(
+      setTriggerError(
         error instanceof Error ? error.message : 'Ingestion trigger failed.'
       );
     } finally {
       setActiveAssetId(null);
-      void loadJobs();
     }
   };
 
@@ -172,6 +177,8 @@ export default function IngestionWorkspace() {
         isLoading={assetsLoading}
         error={assetsError}
         activeAssetId={activeAssetId}
+        triggerError={triggerError}
+        triggerMessage={triggerMessage}
         onTrigger={handleTrigger}
         onRefreshAssets={loadAssets}
       />

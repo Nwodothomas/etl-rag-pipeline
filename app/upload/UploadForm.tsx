@@ -121,6 +121,7 @@ export default function UploadForm({ onUploadComplete }: UploadFormProps) {
   return (
     <form
       onSubmit={handleSubmit}
+      noValidate
       className="rounded-3xl border border-black/10 bg-white p-6 shadow-sm"
     >
       <div className="mb-5">

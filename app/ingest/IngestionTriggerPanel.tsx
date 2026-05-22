@@ -10,6 +10,8 @@ type IngestionTriggerPanelProps = {
   isLoading: boolean;
   error: string | null;
   activeAssetId: string | null;
+  triggerError: string | null;
+  triggerMessage: string | null;
   onTrigger: (asset: KnowledgeAsset) => void | Promise<void>;
   onRefreshAssets: () => void | Promise<void>;
 };
@@ -24,6 +26,8 @@ export default function IngestionTriggerPanel({
   isLoading,
   error,
   activeAssetId,
+  triggerError,
+  triggerMessage,
   onTrigger,
   onRefreshAssets,
 }: IngestionTriggerPanelProps) {
@@ -66,6 +70,23 @@ export default function IngestionTriggerPanel({
         </div>
       ) : null}
 
+      {triggerError ? (
+        <div
+          role="alert"
+          className="mt-6 rounded-2xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-700"
+        >
+          <p className="font-semibold">Ingestion trigger failed.</p>
+          <p className="mt-2">{triggerError}</p>
+        </div>
+      ) : null}
+
+      {triggerMessage ? (
+        <div className="mt-6 rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-800">
+          <p className="font-semibold">Ingestion request accepted.</p>
+          <p className="mt-2">{triggerMessage}</p>
+        </div>
+      ) : null}
+
       {!isLoading && !error && assets.length === 0 ? (
         <div className="mt-6 rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-5 text-sm leading-6 text-slate-600">
           No uploaded assets are available yet. Upload a file or register a URL
@@ -79,6 +100,13 @@ export default function IngestionTriggerPanel({
             const latestJob = findLatestJob(jobs, asset.id);
             const isSubmitting = activeAssetId === asset.id;
             const isDisabled = isSubmitting || latestJob?.status === 'processing';
+            const buttonLabel = isSubmitting
+              ? 'Triggering...'
+              : latestJob?.status === 'processing'
+                ? 'In progress'
+                : latestJob?.status === 'completed'
+                  ? 'Re-run ingestion'
+                  : 'Trigger ingestion';
 
             return (
               <article
@@ -107,7 +135,7 @@ export default function IngestionTriggerPanel({
                       }}
                       className="rounded-full bg-amber-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-amber-700 disabled:cursor-not-allowed disabled:bg-amber-300"
                     >
-                      {isSubmitting ? 'Triggering...' : 'Trigger ingestion'}
+                      {buttonLabel}
                     </button>
                   </div>
                 </div>
