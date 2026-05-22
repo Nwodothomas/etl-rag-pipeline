@@ -1,5 +1,6 @@
 import type {
   ApiErrorResponse,
+  IngestionHistoryResponse,
   IngestionRequest,
   IngestionResponse,
   UploadHistoryResponse,
@@ -56,4 +57,13 @@ export async function triggerIngestion(payload: IngestionRequest) {
   });
 
   return parseResponse<IngestionResponse>(response);
+}
+
+export async function fetchIngestionHistory() {
+  const response = await fetch("/api/ingest", {
+    method: "GET",
+    cache: "no-store",
+  });
+
+  return parseResponse<IngestionHistoryResponse>(response);
 }

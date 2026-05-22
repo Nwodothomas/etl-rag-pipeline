@@ -1,4 +1,4 @@
-import IngestionLogs from "@/app/ingest/IngestionLogs";
+import IngestionWorkspace from "@/app/ingest/IngestionWorkspace";
 
 export default function IngestPage() {
   return (
@@ -11,13 +11,13 @@ export default function IngestPage() {
           Track how uploaded assets move into the RAG knowledge base.
         </h1>
         <p className="mt-4 max-w-3xl text-base leading-7 text-slate-600">
-          In Stage 1, this route establishes the ingestion monitoring view and
-          the shared job model. Real backend orchestration will be added when we
-          integrate with the ingestion API.
+          This stage turns ingestion into a real workflow: select uploaded
+          assets, trigger the ingestion API, and watch job activity update in
+          the log panel.
         </p>
       </div>
 
-      <IngestionLogs />
+      <IngestionWorkspace />
     </section>
   );
 }

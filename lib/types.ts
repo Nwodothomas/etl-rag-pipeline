@@ -57,6 +57,10 @@ export interface IngestionJob {
   id: string;
   assetId: string;
   assetName: string;
+  assetType?: AssetType;
+  sourceType?: UploadSourceType;
+  bucketPath?: string;
+  sourceUrl?: string;
   status: PipelineStatus;
   startedAt?: string;
   completedAt?: string;
@@ -65,10 +69,20 @@ export interface IngestionJob {
 
 export interface IngestionRequest {
   assetId: string;
+  assetName: string;
+  assetType: AssetType;
+  sourceType: UploadSourceType;
+  bucketPath?: string;
+  sourceUrl?: string;
 }
 
 export interface IngestionResponse {
   job: IngestionJob;
+  message: string;
+}
+
+export interface IngestionHistoryResponse {
+  jobs: IngestionJob[];
   message: string;
 }
 

@@ -1,34 +1,13 @@
+import Loader from "@/components/Loader";
 import StatusBadge from "@/components/StatusBadge";
 import type { IngestionJob } from "@/lib/types";
 
-const ingestionJobs: IngestionJob[] = [
-  {
-    id: "job-001",
-    assetId: "asset-001",
-    assetName: "architecture-overview.pdf",
-    status: "completed",
-    startedAt: "2026-05-22T09:02:00.000Z",
-    completedAt: "2026-05-22T09:05:00.000Z",
-    message: "Document parsed and ready for chunking.",
-  },
-  {
-    id: "job-002",
-    assetId: "asset-002",
-    assetName: "roadmap-notes.txt",
-    status: "processing",
-    startedAt: "2026-05-22T09:09:00.000Z",
-    message: "Normalizing text content before embedding.",
-  },
-  {
-    id: "job-003",
-    assetId: "asset-003",
-    assetName: "https://docs.example.com/start-here",
-    status: "failed",
-    startedAt: "2026-05-22T09:11:00.000Z",
-    completedAt: "2026-05-22T09:12:00.000Z",
-    message: "URL ingestion is not wired to the backend yet.",
-  },
-];
+type IngestionLogsProps = {
+  jobs: IngestionJob[];
+  isLoading: boolean;
+  error: string | null;
+  onRefresh: () => void | Promise<void>;
+};
 
 function formatDate(value?: string) {
   if (!value) {
@@ -41,7 +20,12 @@ function formatDate(value?: string) {
   }).format(new Date(value));
 }
 
-export default function IngestionLogs() {
+export default function IngestionLogs({
+  jobs,
+  isLoading,
+  error,
+  onRefresh,
+}: IngestionLogsProps) {
   return (
     <section className="rounded-3xl border border-black/10 bg-white p-6 shadow-sm">
       <div className="flex items-start justify-between gap-4">
@@ -50,17 +34,46 @@ export default function IngestionLogs() {
             Ingestion logs
           </h2>
           <p className="mt-2 text-sm leading-6 text-slate-600">
-            These seeded jobs demonstrate the job states and audit details the
-            UI will expose once ingestion is connected to the backend.
+            Live job results from the ingestion API. This is where developers
+            can inspect pipeline activity after triggering assets.
           </p>
         </div>
-        <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-slate-600">
-          Stage 1
-        </span>
+        <button
+          type="button"
+          onClick={() => {
+            void onRefresh();
+          }}
+          className="rounded-full border border-slate-300 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-slate-600 transition hover:border-slate-400 hover:bg-slate-50"
+        >
+          Refresh logs
+        </button>
       </div>
 
-      <div className="mt-6 space-y-4">
-        {ingestionJobs.map((job) => (
+      {isLoading ? (
+        <div className="mt-6">
+          <Loader label="Loading ingestion jobs..." />
+        </div>
+      ) : null}
+
+      {error ? (
+        <div
+          role="alert"
+          className="mt-6 rounded-2xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-700"
+        >
+          <p className="font-semibold">Ingestion logs are unavailable.</p>
+          <p className="mt-2">{error}</p>
+        </div>
+      ) : null}
+
+      {!isLoading && !error && jobs.length === 0 ? (
+        <div className="mt-6 rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-5 text-sm leading-6 text-slate-600">
+          No ingestion jobs have been triggered yet.
+        </div>
+      ) : null}
+
+      {!isLoading && !error && jobs.length > 0 ? (
+        <div className="mt-6 space-y-4">
+          {jobs.map((job) => (
           <article
             key={job.id}
             className="rounded-2xl border border-slate-200 bg-slate-50 p-4"
@@ -81,14 +94,35 @@ export default function IngestionLogs() {
                 <dt className="font-medium text-slate-800">Completed</dt>
                 <dd className="mt-1">{formatDate(job.completedAt)}</dd>
               </div>
+              <div>
+                <dt className="font-medium text-slate-800">Source type</dt>
+                <dd className="mt-1">{job.sourceType ?? "Not available"}</dd>
+              </div>
+              <div>
+                <dt className="font-medium text-slate-800">Asset type</dt>
+                <dd className="mt-1">{job.assetType ?? "Not available"}</dd>
+              </div>
+              {job.bucketPath ? (
+                <div className="md:col-span-2">
+                  <dt className="font-medium text-slate-800">Bucket path</dt>
+                  <dd className="mt-1 break-all">{job.bucketPath}</dd>
+                </div>
+              ) : null}
+              {job.sourceUrl ? (
+                <div className="md:col-span-2">
+                  <dt className="font-medium text-slate-800">Source URL</dt>
+                  <dd className="mt-1 break-all">{job.sourceUrl}</dd>
+                </div>
+              ) : null}
               <div className="md:col-span-2">
                 <dt className="font-medium text-slate-800">Message</dt>
                 <dd className="mt-1">{job.message}</dd>
               </div>
             </dl>
           </article>
-        ))}
-      </div>
+          ))}
+        </div>
+      ) : null}
     </section>
   );
 }
